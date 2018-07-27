@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package robodogs;
+
+message CameraFrameMsg {
+  
+  bytes cameraFrame = 1;
+  int32 id = 2;
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package robodog;
+
+message SensorMsg {
+  message Sentence {
+    repeated string conditions = 1;
+    repeated string commands = 2;
+    repeated string questions = 3;
+    string sentence = 4;
+    float sentiment = 5;
+  }
+  
+  repeated Sentence sentences = 1;
+}

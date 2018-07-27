@@ -1,0 +1,3 @@
+[submodule "robomodules"]
+	path = robomodules
+	url = git@github.com:robodog-gix/robomodules.git
