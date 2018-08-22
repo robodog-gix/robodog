@@ -8,7 +8,7 @@ import os
 from functools import partial
 
 
-ser =serial.Serial('/dev/ttyACM0',115200);
+ser =serial.Serial('/dev/ttyACM0',115200)
 data={"distance":0,"mt1":0,"mt2":0,"mt3":0}
 status=0
 
@@ -22,7 +22,9 @@ def serReadWrite():
         print(ser) 
         data = {"distance": distance,"mt1":mt1,"mt2":mt2,"mt3":mt3}
         print(data)
+        return data
     #status will be received from pc, for eye light
+    '''
     try:
         if data["distance"]<=10:    
             status=0
@@ -34,6 +36,7 @@ def serReadWrite():
     except NameError:
         data={"distance":0,"mt1":0,"mt2":0,"mt3":0}
         status=0
+    '''
     print(status)  
     
         
