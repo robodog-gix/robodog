@@ -3,9 +3,8 @@
 import os, sys
 import cv2
 import robomodules as rm
-import pickle
 import pygame
-import numpy
+import numpy as np
 from messages import message_buffers, MsgType
 
 ADDRESS = os.environ.get("BIND_ADDRESS","localhost")
@@ -15,16 +14,19 @@ FREQUENCY = 20
 
 FRAME_WIDTH = 640
 SCREEN_SIZE = (FRAME_WIDTH*2, 900)
+CAM_ID = 0
 
 class GuiModule(rm.ProtoModule):
     def __init__(self, addr, port):
-        self.subscriptions = [MsgType.CAMERA_FRAME_MSG, MsgType.SENSOR_MSG]
+        self.subscriptions = [MsgType.CAMERA_FRAME_MSG, MsgType.SENSOR_MSG, MsgType.FIREBASE_MSG]
         super().__init__(addr, port, message_buffers, MsgType, FREQUENCY, self.subscriptions)
         self.frames = {}
         self.sentences = []
         pygame.init()
         pygame.font.init()
         self.text_surf = pygame.Surface((FRAME_WIDTH-10, 800))
+        self.firebase_data_surf = pygame.Surface((SCREEN_SIZE[0]-10, 200))
+        self.firebase_json = ''
         self.font = pygame.font.SysFont(pygame.font.get_default_font(), 30)
         self.display = pygame.display.set_mode(SCREEN_SIZE)
 
@@ -32,9 +34,12 @@ class GuiModule(rm.ProtoModule):
         # This gets called whenever any message is received
         # We receive pickled frames here.
         if msg_type == MsgType.CAMERA_FRAME_MSG:
-            self.frames[msg.id] = msg.cameraFrame
+            if msg.id == CAM_ID:
+                self.frames[msg.id] = msg.cameraFrame
         elif msg_type == MsgType.SENSOR_MSG:
             self.sentences = msg.sentences
+        elif msg_type == MsgType.FIREBASE_MSG:
+            self.firebase_json = msg.json
         
     def tick(self):
         for event in pygame.event.get():
@@ -42,6 +47,7 @@ class GuiModule(rm.ProtoModule):
                 sys.exit('quit')
         self._display_frames()
         self._draw_speech()
+        self._draw_firebase_data()
         pygame.display.update()
 
     def _draw_speech(self):
@@ -86,13 +92,21 @@ class GuiModule(rm.ProtoModule):
             y += 40
         self.display.blit(self.text_surf, (SCREEN_SIZE[0]-FRAME_WIDTH+10, 10))
 
+    def _draw_firebase_data(self):
+        self.firebase_data_surf.fill((0,0,0))
+        white = (255, 255, 255)
+        sentence_surf = self.font.render(self.firebase_json, True, white)
+        self.firebase_data_surf.blit(sentence_surf, (0, 0))
+        self.display.blit(self.firebase_data_surf, (0, SCREEN_SIZE[1]-50))
+
     def _display_frames(self):
         cur_x = 0
-        for frame_id in self.frames:
-            raw_frame = self.frames[frame_id]
-            frame = pickle.loads(raw_frame)
+        if CAM_ID in self.frames:
+            raw_frame = self.frames[CAM_ID]
+            nparr = np.frombuffer(raw_frame, np.uint8)
+            frame = cv2.imdecode(nparr, -1)
             frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-            frame = numpy.rot90(frame)
+            frame = np.rot90(frame)
             frame = pygame.surfarray.make_surface(frame)
             cur_width = frame.get_width()
             cur_height = frame.get_height()
