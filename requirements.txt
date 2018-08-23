@@ -6,3 +6,5 @@ PyAudio==0.2.11
 pygame==1.9.4
 six==1.11.0
 SpeechRecognition==3.8.1
+pyrebase
+
