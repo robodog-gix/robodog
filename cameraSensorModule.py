@@ -18,7 +18,7 @@ CAMERA_PORT = 0
 class CameraSensorModule(rm.ProtoModule):
     def __init__(self, addr, port, id):
         super().__init__(addr, port, message_buffers, MsgType, FREQUENCY)
-        self.cam = cv2.VideoCapture(CAMERA_PORT = 0)
+        self.cam = cv2.VideoCapture(CAMERA_PORT)
         self.id = id
 
     def msg_received(self, msg, msg_type):
